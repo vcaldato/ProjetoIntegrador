@@ -1,21 +1,44 @@
 
-## SERVIDOR NODE
-Este código configura uma conexão Wi-Fi e permite controlar um LED remotamente via Telnet usando um módulo ESP8266. Além disso, ele permite atualizações Over-the-Air (OTA) para facilitar o desenvolvimento.
+# SERVIDOR NODE
 
-Resumo das Funcionalidades
-Conexão Wi-Fi:
+## Main
+Este código configura um servidor web no ESP8266 que permite ligar e desligar um LED remotamente. Ele cria uma página HTML para o controle e utiliza uma conexão Wi-Fi.
 
-O dispositivo ESP8266 conecta-se a uma rede Wi-Fi usando o SSID e senha fornecidos.
-Configuração OTA:
+Principais Funções:
 
-Através da biblioteca ArduinoOTA, o código permite atualizações OTA, com mensagens de progresso e tratamento de erros exibidas no monitor serial.
-Servidor Telnet:
+Configuração de Rede:
 
-Um servidor Telnet é iniciado na porta 23, permitindo a conexão de um cliente.
-Uma vez conectado, o cliente pode enviar os comandos:
-'1': Liga o LED.
-'0': Desliga o LED.
-Mensagens de confirmação e de erro são enviadas ao cliente Telnet.
+Conecta o ESP8266 à rede Wi-Fi usando o SSID e senha definidos.
+Configura um IP estático (local_IP, gateway e subnet) na rede.
+Servidor Web:
+
+O servidor é inicializado na porta 80 e oferece três endpoints:
+/ - Página principal, onde são exibidos os botões para controlar o LED.
+/5/on - Endpoint para ligar o LED.
+/5/off - Endpoint para desligar o LED.
+Interface HTML:
+
+A página HTML mostra dois botões (ON e OFF) que, ao serem pressionados, acionam uma requisição para ligar ou desligar o LED.
 Controle do LED:
 
-O LED conectado ao pino D1 do ESP8266 é ligado e desligado com os comandos recebidos via Telnet.
+O LED está conectado ao pino D1 (GPIO5) do ESP8266.
+handleOn() liga o LED, e handleOff() desliga o LED.
+
+## Platformio
+
+Este código é um arquivo de configuração do PlatformIO para o ESP8266, utilizando o framework Arduino.
+
+Configurações Especificadas:
+
+platform: Define a plataforma ESP8266.
+board: Especifica o modelo da placa como nodemcuv2.
+framework: Define o framework como Arduino.
+Esta configuração permite que o código seja compilado e carregado para uma placa NodeMCU ESP8266 usando o PlatformIO.
+
+
+
+
+
+
+
+
