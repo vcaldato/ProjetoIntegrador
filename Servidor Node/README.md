@@ -155,3 +155,16 @@ void handleOff() {
   server.send(200, "text/plain", "LED Desligado!");
 }
 ```
+## Platformio.ini
+```cpp
+platform = espressif8266
+board = nodemcuv2
+framework = arduino
+```
+[env:nodemcuv2]: Define um ambiente chamado nodemcuv2 no PlatformIO.
+
+platform = espressif8266: Especifica que o projeto é para a plataforma ESP8266 da Espressif.
+
+board = nodemcuv2: Indica que a placa utilizada é a NodeMCU v2.
+
+framework = arduino: Define que o projeto usará o framework Arduino para desenvolvimento.
