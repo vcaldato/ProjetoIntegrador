@@ -1,4 +1,4 @@
-# ESP8266 com Conexão Wi-Fi e Atualização OTA
+# OTA
 
 Este projeto configura o ESP8266 para conectar-se a uma rede Wi-Fi e habilita a atualização de firmware via OTA (Over-the-Air). Com isso, você pode atualizar o código remotamente sem a necessidade de um cabo físico após o upload inicial.
 
