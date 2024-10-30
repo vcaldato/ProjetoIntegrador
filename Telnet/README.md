@@ -1,20 +1,110 @@
-## Telnet
-Este código configura uma conexão Wi-Fi e permite controlar um LED remotamente via Telnet usando um módulo ESP8266. Além disso, ele permite atualizações Over-the-Air (OTA) para facilitar o desenvolvimento.
+# ESP8266 com Controle de LED via Telnet e Atualização OTA
 
-Resumo das Funcionalidades
-Conexão Wi-Fi:
+Este projeto configura o ESP8266 para se conectar a uma rede Wi-Fi, permite o controle de um LED através de uma conexão Telnet e habilita a atualização de firmware via OTA (Over-the-Air).
 
-O dispositivo ESP8266 conecta-se a uma rede Wi-Fi usando o SSID e senha fornecidos.
-Configuração OTA:
+## Sumário
 
-Através da biblioteca ArduinoOTA, o código permite atualizações OTA, com mensagens de progresso e tratamento de erros exibidas no monitor serial.
-Servidor Telnet:
+- [Componentes Necessários](#componentes-necessários)
+- [Código Completo](#código-completo)
+- [Explicação do Código](#explicação-do-código)
+  - [Bibliotecas Necessárias](#bibliotecas-necessárias)
+  - [Configuração Inicial](#configuração-inicial)
+  - [Função setup()](#função-setup)
+  - [Função loop()](#função-loop)
 
-Um servidor Telnet é iniciado na porta 23, permitindo a conexão de um cliente.
-Uma vez conectado, o cliente pode enviar os comandos:
-'1': Liga o LED.
-'0': Desliga o LED.
-Mensagens de confirmação e de erro são enviadas ao cliente Telnet.
-Controle do LED:
+---
 
-O LED conectado ao pino D1 do ESP8266 é ligado e desligado com os comandos recebidos via Telnet.
+## Componentes Necessários
+
+- **ESP8266**
+- **Cabo USB** para conexão ao computador
+- **LED** e um resistor para o controle do LED
+
+---
+
+## Código Completo
+
+```cpp
+#include <ESP8266WiFi.h>
+#include <ArduinoOTA.h>
+
+const char* ssid = "ssid";          // Nome da rede Wi-Fi
+const char* password = "password";  // Senha da rede Wi-Fi
+
+const int LED_PIN = 5; // D1
+
+WiFiServer server(23);
+WiFiClient client;
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  Serial.begin(9600);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println("Conexão falhou, tentando novamente...");
+    WiFi.begin(ssid, password);
+    delay(5000);
+  }
+
+  ArduinoOTA.onStart([]() {
+    Serial.println("Iniciando atualização OTA...");
+  });
+
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nAtualização concluída.");
+  });
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progresso: %u%%\r", (progress / (total / 100)));
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Erro[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Falha na autenticação");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Falha no início");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Falha na conexão");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Falha no recebimento");
+    else if (error == OTA_END_ERROR) Serial.println("Falha na finalização");
+  });
+
+  ArduinoOTA.begin();
+  Serial.println("Pronto para atualizações OTA.");
+  Serial.print("Endereço IP: ");
+  Serial.println(WiFi.localIP());
+
+  server.begin();
+  server.setNoDelay(true);
+  Serial.println("Servidor Telnet iniciado...");
+}
+
+void loop() {
+  ArduinoOTA.handle();
+  if (server.hasClient()) {
+    if (!client || !client.connected()) {
+      if (client) client.stop();
+      client = server.available();
+      Serial.println("Cliente conectado via Telnet.");
+      client.println("Digite '1' para ligar o LED e '0' para desligar o LED.");
+    } else {
+      server.available().stop();
+    }
+  }
+
+  if (client && client.connected() && client.available()) {
+    char command = client.read();
+    if (command == '1') {
+      digitalWrite(LED_PIN, LOW); 
+      client.println("LED ligado.");
+      Serial.println("LED ligado.");
+    } else if (command == '0') {
+      digitalWrite(LED_PIN, HIGH); 
+      client.println("LED desligado.");
+      Serial.println("LED desligado.");
+    } else {
+      client.println("Comando inválido. Digite '1' para ligar o LED e '0' para desligar o LED.");
+    }
+  }
+}
+
